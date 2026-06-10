@@ -3,7 +3,12 @@ guid: 501411e0d7742474d8875f2c23f2f416
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Inner light emission
+    second: {fileID: 2100000, guid: 3b5e788e02c451848837ba3afb6b18c1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

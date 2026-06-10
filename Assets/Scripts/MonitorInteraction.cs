@@ -45,6 +45,12 @@ public class MonitorInteraction : MonoBehaviour
             {
                 interactTextUI.SetActive(true);
 
+                if (Cursor.visible)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible   = false;
+                }
+
                 if (Input.GetMouseButtonDown(0))
                     EnterMonitorMode();
             }
