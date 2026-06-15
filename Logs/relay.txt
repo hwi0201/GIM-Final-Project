@@ -3335,3 +3335,17 @@
 [2026-06-15T14:47:50.292Z] [INFO] log Unity client connected with ID: editor-25273-bp0tz6 (relay 1.0.12-build.96)
 [2026-06-15T14:47:50.292Z] [DEBUG] log Relay->Editor communication is unblocked
 [2026-06-15T14:47:50.292Z] [INFO] connection.established clientId=editor-25273-bp0tz6 port=9001
+[2026-06-15T15:17:17.525Z] [INFO] relay.startup port=9001 mcpClientPort=9002 editorPid=72615
+[2026-06-15T15:17:17.526Z] [INFO] log === RELAY SERVER STARTED === (unity-ai-relay v1.0.12-build.96)
+[2026-06-15T15:17:17.526Z] [INFO] log Starting relay server...
+[2026-06-15T15:17:17.526Z] [INFO] log Command line arguments: ["bun","/$bunfs/root/relay_mac_arm64","--relay","--port","9001","--mcp-client-port","9002","--editor-pid","72615","--shutdown-delay","180","--log-dir","/Users/hwangseoeun/Documents/GitHub/GIM-Final-Project/Logs"]
+[2026-06-15T15:17:17.526Z] [INFO] log Parsed config: {"port":9001,"mcpClientPort":9002,"editorPid":"72615","shutdownDelaySeconds":180}
+[2026-06-15T15:17:17.529Z] [INFO] log Initializing relay components...
+[2026-06-15T15:17:17.530Z] [INFO] log Creating RelayEditor...
+[2026-06-15T15:17:17.535Z] [INFO] log WebSocket server started
+[2026-06-15T15:17:17.535Z] [INFO] log Relay server initialization completed
+[2026-06-15T15:17:17.536Z] [INFO] log MCP Client initialized at port: 9002
+[2026-06-15T15:17:17.552Z] [INFO] log Unity MCP Relay server started | Port: 9002 | Endpoints: /mcp/start-server, /mcp/stop-server, /mcp/server-status, /mcp/call-tool
+[2026-06-15T15:17:17.561Z] [INFO] log [shell-env] PATH augmented with shell environment (16 entries)
+[2026-06-15T15:17:17.685Z] [INFO] log Unity client connected with ID: editor-72615-v3xwvl (relay 1.0.12-build.96)
+[2026-06-15T15:17:17.685Z] [INFO] connection.established clientId=editor-72615-v3xwvl port=9001
