@@ -54,6 +54,13 @@ public class CoffeeInteraction : MonoBehaviour
         if (deskDropIcon     != null) deskDropIcon.SetActive(false);
         if (deskDropZone     != null) deskDropZone.SetActive(false);
         if (cupOnDesk        != null) cupOnDesk.SetActive(false);
+
+        // Sin 복귀 시 커피 완료 상태 복원
+        if (GameState.coffeeDone)
+        {
+            State = CoffeeState.Done;
+            if (cupOnDesk != null) cupOnDesk.SetActive(true);
+        }
     }
 
     void Update()
@@ -171,6 +178,7 @@ public class CoffeeInteraction : MonoBehaviour
     void DropAtDesk()
     {
         State = CoffeeState.Done;
+        GameState.coffeeDone = true;
 
         if (cupInHand    != null) cupInHand.SetActive(false);
         if (deskDropIcon != null) deskDropIcon.SetActive(false);

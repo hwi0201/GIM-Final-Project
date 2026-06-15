@@ -22,31 +22,8 @@ public class KakaoChatController : MonoBehaviour
 
     public void PlayChat()
     {
-        Debug.Log("PlayChat 호출됨");
-
-        if (scrollRect == null)
-        {
-            Debug.LogError("ScrollRect가 연결되지 않았습니다.");
-            return;
-        }
-
-        if (content == null)
-        {
-            Debug.LogError("Content가 연결되지 않았습니다.");
-            return;
-        }
-
-        if (messagePrefab == null)
-        {
-            Debug.LogError("Message Prefab이 연결되지 않았습니다.");
-            return;
-        }
-
-        if (messages == null || messages.Length == 0)
-        {
-            Debug.LogError("Messages 배열이 비어 있습니다.");
-            return;
-        }
+        if (scrollRect == null || content == null || messagePrefab == null) return;
+        if (messages == null || messages.Length == 0) return;
 
         if (chatRoutine != null)
         {
@@ -59,8 +36,6 @@ public class KakaoChatController : MonoBehaviour
 
     IEnumerator PlayChatRoutine()
     {
-        Debug.Log("채팅 코루틴 시작");
-
         for (int i = 0; i < messages.Length; i++)
         {
             yield return new WaitForSeconds(messageInterval);
@@ -78,13 +53,6 @@ public class KakaoChatController : MonoBehaviour
         {
             msgText.text = text;
         }
-        else
-        {
-            Debug.LogWarning("메시지 프리팹 안에 TMP_Text가 없습니다.");
-        }
-
-        Debug.Log("메시지 생성됨: " + text);
-
         StartCoroutine(ScrollToBottomNextFrame());
     }
 

@@ -86,6 +86,7 @@ public class GlitchVideoController : MonoBehaviour
 
         if (loadSceneAfterGlitch && !string.IsNullOrEmpty(nextSceneName))
         {
+            GameState.returnedFromSin1 = true;
             SceneManager.LoadScene(nextSceneName);
         }
         else

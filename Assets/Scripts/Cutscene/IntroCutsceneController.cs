@@ -35,6 +35,13 @@ public class IntroCutsceneController : MonoBehaviour
 
     void Awake()
     {
+        // Sin 복귀면 자기 자신을 꺼버림 → Start()가 아예 실행 안 됨
+        if (GameState.returnedFromSin1 || GameState.returnedFromSin2)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         fpsController    = FindFirstObjectByType<FirstPersonController>();
         starterInput     = FindFirstObjectByType<StarterAssetsInputs>();
         cinemachineBrain = Camera.main?.GetComponent("CinemachineBrain") as Behaviour;

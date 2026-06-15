@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class TempSceneReturn : MonoBehaviour
 {
-    public string returnSceneName = "MainScene";
+    public string returnSceneName = "MainRoom";
     public float  delay = 5f;
     public bool   isSin1 = true;
 

@@ -45,6 +45,16 @@ public class FaxController : MonoBehaviour
     private bool                  paperReady    = false;
     private bool                  hasInteracted = false;
 
+    void Awake()
+    {
+        // IntroCutsceneController.Awake()가 먼저 실행됐을 경우를 대비한 이중 차단
+        if (GameState.returnedFromSin1 || GameState.returnedFromSin2)
+        {
+            IntroCutsceneController cutscene = FindFirstObjectByType<IntroCutsceneController>();
+            if (cutscene != null) cutscene.gameObject.SetActive(false);
+        }
+    }
+
     void Start()
     {
         cam              = Camera.main;
@@ -120,32 +130,31 @@ public class FaxController : MonoBehaviour
                 .OnComplete(() => { if (monologueBackground != null) monologueBackground.SetActive(false); });
 
         // 카메라 팩스 쪽으로 강제 회전
+        Quaternion originalRot = cam.transform.rotation;
+        if (cinemachineBrain != null) cinemachineBrain.enabled = false;
+
         if (faxLookTarget != null)
         {
-            Quaternion originalRot = cam.transform.rotation;
-            if (cinemachineBrain != null) cinemachineBrain.enabled = false;
-
             Quaternion lookRot = Quaternion.LookRotation(
                 faxLookTarget.position - cam.transform.position);
             cam.transform.DORotateQuaternion(lookRot, camTurnDuration).SetEase(Ease.OutCubic);
-            yield return new WaitForSeconds(camTurnDuration + paperSlideTime + 0.5f);
-
-            // 원래 회전으로 복구
-            cam.transform.DORotateQuaternion(originalRot, camReturnDuration).SetEase(Ease.OutCubic);
-            yield return new WaitForSeconds(camReturnDuration);
-
-            if (cinemachineBrain != null) cinemachineBrain.enabled = true;
         }
+        yield return new WaitForSeconds(camTurnDuration);
 
-        // 종이 슬라이드
+        // 카메라가 팩스 보는 동안 종이 슬라이드
         if (faxPaper != null)
         {
             faxPaper.SetActive(true);
             faxPaper.transform.localPosition = paperStartLocalPos;
             faxPaper.transform.DOLocalMove(paperEndLocalPos, paperSlideTime).SetEase(Ease.Linear);
         }
+        yield return new WaitForSeconds(paperSlideTime + 0.5f);
 
-        yield return new WaitForSeconds(paperSlideTime + 0.3f);
+        // 원래 회전으로 복구
+        cam.transform.DORotateQuaternion(originalRot, camReturnDuration).SetEase(Ease.OutCubic);
+        yield return new WaitForSeconds(camReturnDuration);
+
+        if (cinemachineBrain != null) cinemachineBrain.enabled = true;
 
         paperReady = true;
     }
