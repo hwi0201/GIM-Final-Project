@@ -89,7 +89,7 @@ public class DialogueSystem : MonoBehaviour
     {
         CheckPlayerDistance();
 
-        if (playerInRange && !isDialogueActive && Input.GetKeyDown(KeyCode.F))
+        if (playerInRange && !isDialogueActive && Input.GetKeyDown(KeyCode.E))
             FindObjectOfType<CutsceneManager>().TriggerCutscene();
     }
 
