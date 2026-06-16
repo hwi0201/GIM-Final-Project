@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using StarterAssets;
 
@@ -12,12 +13,20 @@ public class EnvelopeInteraction : MonoBehaviour
     public GameObject paperFront;
     public GameObject paperBack;
 
+    [Header("종이 보는 동안 깜빡임 효과")]
+    public CanvasGroup blackPanel;
+    public float        flickerMinInterval = 2f;
+    public float        flickerMaxInterval = 4f;
+    public float        flickerHoldMin     = 1f;
+    public float        flickerHoldMax     = 2f;
+
     private Camera               cam;
     private FirstPersonController fpsController;
     private StarterAssetsInputs   starterInput;
 
-    private bool isViewing = false;
-    private bool isFlipped = false;
+    private bool      isViewing = false;
+    private bool      isFlipped = false;
+    private Coroutine flickerRoutine;
 
     void Start()
     {
@@ -28,6 +37,13 @@ public class EnvelopeInteraction : MonoBehaviour
         if (envelopeIcon != null) envelopeIcon.SetActive(false);
         if (paperFront   != null) paperFront.SetActive(false);
         if (paperBack    != null) paperBack.SetActive(false);
+
+        if (blackPanel != null)
+        {
+            blackPanel.alpha = 0f;
+            blackPanel.blocksRaycasts = false;
+            blackPanel.gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -67,6 +83,28 @@ public class EnvelopeInteraction : MonoBehaviour
 
         if (paperFront != null) paperFront.SetActive(true);
         if (paperBack  != null) paperBack.SetActive(false);
+
+        if (blackPanel != null)
+            flickerRoutine = StartCoroutine(FlickerRoutine());
+    }
+
+    IEnumerator FlickerRoutine()
+    {
+        while (isViewing)
+        {
+            yield return new WaitForSeconds(Random.Range(flickerMinInterval, flickerMaxInterval));
+            if (!isViewing) yield break;
+
+            blackPanel.gameObject.SetActive(true);
+            blackPanel.blocksRaycasts = true;
+            blackPanel.alpha = 1f;
+
+            yield return new WaitForSeconds(Random.Range(flickerHoldMin, flickerHoldMax));
+
+            blackPanel.alpha = 0f;
+            blackPanel.blocksRaycasts = false;
+            blackPanel.gameObject.SetActive(false);
+        }
     }
 
     void FlipPaper()
@@ -81,6 +119,14 @@ public class EnvelopeInteraction : MonoBehaviour
         isViewing = false;
         if (paperFront != null) paperFront.SetActive(false);
         if (paperBack  != null) paperBack.SetActive(false);
+
+        if (flickerRoutine != null) StopCoroutine(flickerRoutine);
+        if (blackPanel != null)
+        {
+            blackPanel.alpha = 0f;
+            blackPanel.blocksRaycasts = false;
+            blackPanel.gameObject.SetActive(false);
+        }
 
         UnlockPlayer();
     }
