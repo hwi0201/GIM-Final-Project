@@ -4,3 +4,7 @@
 /UserSettings/
 /obj/
 *.dylib
+*.fbx
+*.FBX
+*.usdz
+*.usd
