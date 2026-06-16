@@ -120,6 +120,9 @@ public class DialogueSystem : MonoBehaviour
             return;
         }
 
+        if (cutsceneManager != null)
+        cutsceneManager.OnDialogueLine(index);
+
         DialogueLine line = lines[index];
 
         if (line.type == LineType.Narration)
