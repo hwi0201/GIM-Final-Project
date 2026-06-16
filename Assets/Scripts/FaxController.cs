@@ -26,11 +26,19 @@ public class FaxController : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip   faxBeepClip;
 
-    [Header("독백 자막")]
-    public TextMeshProUGUI monologueText;
+    [Header("독백 자막 (백그라운드/그룹 공유)")]
     public CanvasGroup     monologueGroup;
     public GameObject      monologueBackground;
     public float           typeSpeed = 0.045f;
+
+    [Header("독백 텍스트 (영상 볼 때)")]
+    public TextMeshProUGUI monologueText;
+
+    [Header("독백 텍스트 (종이 보고 나서 - 1줄)")]
+    public TextMeshProUGUI monologueText2;
+
+    [Header("독백 텍스트 (종이 보고 나서 - 2줄)")]
+    public TextMeshProUGUI monologueText3;
 
     [Header("종이 클로즈업 UI")]
     public GameObject paperCloseupPanel;
@@ -42,8 +50,10 @@ public class FaxController : MonoBehaviour
     private FirstPersonController fpsController;
     private StarterAssetsInputs   starterInput;
     private Behaviour             cinemachineBrain;
+    private float                 closeGuardUntil = 0f;
     private bool                  paperReady    = false;
     private bool                  hasInteracted = false;
+    private bool                  monologueShown = false;
 
     void Awake()
     {
@@ -79,7 +89,7 @@ public class FaxController : MonoBehaviour
     {
         if (paperCloseupPanel != null && paperCloseupPanel.activeSelf)
         {
-            if (Input.GetMouseButtonDown(1))
+            if (Time.time >= closeGuardUntil && Input.GetMouseButtonDown(1))
                 ClosePaperCloseup();
             return;
         }
@@ -92,12 +102,26 @@ public class FaxController : MonoBehaviour
         // 첫 클릭 전에만 아이콘 표시
         if (!hasInteracted && faxIcon != null) faxIcon.SetActive(inRange);
 
-        if (inRange && Input.GetMouseButtonDown(0))
+        if (inRange && Input.GetMouseButtonDown(0) && IsLookingAtFax())
         {
             hasInteracted = true;
             if (faxIcon != null) faxIcon.SetActive(false);
             StartCoroutine(OpenPaperCloseup());
         }
+    }
+
+    bool IsLookingAtFax()
+    {
+        if (faxPaper == null) return false;
+
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f, 0));
+        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
+        {
+            return hit.collider != null &&
+                   (hit.collider.gameObject == faxPaper ||
+                    hit.collider.transform.IsChildOf(faxPaper.transform));
+        }
+        return false;
     }
 
     // ── 시퀀스 ────────────────────────────────────────────────
@@ -162,6 +186,7 @@ public class FaxController : MonoBehaviour
     IEnumerator OpenPaperCloseup()
     {
         LockPlayer();
+        closeGuardUntil = Time.time + 0.8f;
 
         if (paperCloseupPanel != null)
         {
@@ -173,14 +198,55 @@ public class FaxController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
     }
 
+    IEnumerator FreezeCameraRoutine(Quaternion rot)
+    {
+        while (true)
+        {
+            cam.transform.rotation = rot;
+            yield return null;
+        }
+    }
+
     public void ClosePaperCloseup()
     {
         if (paperCloseupPanel != null)
             paperCloseupPanel.SetActive(false);
 
+        if (!monologueShown)
+        {
+            monologueShown = true;
+            StartCoroutine(PostCloseMonologueRoutine());
+        }
+        else
+        {
+            UnlockPlayer();
+        }
+    }
+
+    IEnumerator PostCloseMonologueRoutine()
+    {
+        Quaternion lockedRot = cam.transform.rotation;
+        if (cinemachineBrain != null) cinemachineBrain.enabled = false;
+        Coroutine freeze = StartCoroutine(FreezeCameraRoutine(lockedRot));
+
+        yield return StartCoroutine(ShowMonologue(
+            "...이 이름들, 아까 영상에서 본 가해자들이잖아.",
+            monologueText2, monologueGroup, monologueBackground));
+
+        yield return new WaitForSeconds(1.0f);
+
+        yield return StartCoroutine(ShowMonologue(
+            "아무래도 기사를 좀 더 찾아봐야겠어.",
+            monologueText3, monologueGroup, monologueBackground));
+
+        yield return new WaitForSeconds(1.0f);
+
         if (monologueGroup != null)
             monologueGroup.DOFade(0f, 0.4f)
                 .OnComplete(() => { if (monologueBackground != null) monologueBackground.SetActive(false); });
+
+        StopCoroutine(freeze);
+        if (cinemachineBrain != null) cinemachineBrain.enabled = true;
 
         UnlockPlayer();
     }
@@ -189,16 +255,33 @@ public class FaxController : MonoBehaviour
 
     IEnumerator ShowMonologue(string text)
     {
-        if (monologueGroup == null || monologueText == null) yield break;
+        yield return ShowMonologue(text, monologueText, monologueGroup, monologueBackground);
+    }
 
-        if (monologueBackground != null) monologueBackground.SetActive(true);
-        monologueText.text = "";
-        monologueGroup.alpha = 0f;
-        monologueGroup.DOFade(1f, 0.3f);
+    IEnumerator ShowMonologue(string text, TextMeshProUGUI targetText, CanvasGroup targetGroup, GameObject targetBackground)
+    {
+        if (targetGroup == null || targetText == null) yield break;
 
+        // 같은 백그라운드를 쓰는 다른 텍스트는 비워서 겹쳐 보이지 않게 함
+        if (monologueText  != null && monologueText  != targetText) monologueText.text  = "";
+        if (monologueText2 != null && monologueText2 != targetText) monologueText2.text = "";
+        if (monologueText3 != null && monologueText3 != targetText) monologueText3.text = "";
+
+        if (targetBackground != null) targetBackground.SetActive(true);
+        targetGroup.alpha = 0f;
+        targetGroup.DOFade(1f, 0.3f);
+
+        targetText.text = "";
         foreach (char c in text)
         {
-            monologueText.text += c;
+            targetText.text += c;
+
+            if (targetBackground != null)
+            {
+                RectTransform bgRect = targetBackground.GetComponent<RectTransform>();
+                if (bgRect != null) LayoutRebuilder.ForceRebuildLayoutImmediate(bgRect);
+            }
+
             yield return new WaitForSeconds(typeSpeed);
         }
     }
